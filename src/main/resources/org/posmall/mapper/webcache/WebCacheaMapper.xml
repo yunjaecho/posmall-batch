@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.posmall.mapper.webcache.WebCacheaMapper">
+
+    <!-- /* select dual */ -->
+    <select id="getWebCacheVacctData" resultType="org.posmall.domain.WebCacheVacctData" parameterType="java.util.HashMap">
+        SELECT  M.ORG_BANK
+                ,M.ORG_CD
+                ,M.VACCT_NO
+                ,L.TR_DATE
+                ,L.TR_SEQ
+                ,L.STAT_CD AS DET_STAT_CD
+                ,M.STAT_CD
+                ,M.IN_GB
+                ,M.PAY_AMT
+                ,M.PAY_FROM_DATE
+                ,M.PAY_TO_DATE
+                ,M.PAY_TO_TIME
+                ,M.CUST_CD
+                ,M.CUST_NM
+                ,L.ERROR_CD
+                ,L.TR_TIME
+                ,L.TR_AMT
+                ,L.IN_BANK_CD
+                ,L.IN_BANK_BRANCH
+                ,L.IN_NAME
+                ,L.ERP_PROC_YN
+                ,L.ENTRY_DATE
+                ,L.ENTRY_IDNO
+        FROM TB_RVAS_MAST M
+        INNER JOIN TB_RVAS_LIST L
+        ON M.ORG_BANK = L.ORG_BANK AND M.ORG_CD = L.ORG_CD AND M.VACCT_NO = L.VACCT_NO AND (CASE WHEN L.ERP_PROC_YN IS NULL THEN 'N' ELSE L.ERP_PROC_YN END) != 'Y'
+        WHERE 1=1
+        AND M.STAT_CD != '2'
+        AND M.ORG_BANK = #{orgBank}
+        AND M.ORG_CD = #{orgCd}
+        AND (CASE WHEN L.ERP_PROC_YN IS NULL THEN 'N' ELSE L.ERP_PROC_YN END) != 'Y'
+        AND M.CUST_CD IS NOT NULL
+        ORDER BY L.TR_DATE ASC, L.TR_SEQ ASC, L.STAT_CD ASC
+    </select>
+
+    <select id="getTbRvasList" resultType="org.posmall.domain.TbRvasVo">
+        SELECT
+               TR_DATE,
+               TR_SEQ,
+               ORG_BANK,
+               ORG_CD,
+               VACCT_NO,
+               STAT_CD,
+               CUST_CD,
+               CUST_NM,
+               ERROR_CD,
+               TR_TIME,
+               TR_AMT,
+               IN_BANK_CD,
+               IN_BANK_BRANCH,
+               IN_NAME,
+               ENTRY_DATE,
+               ENTRY_IDNO,
+               ERP_PROC_YN,
+               ERP_PROC_DT
+        FROM TB_RVAS_LIST WHERE TR_DATE >= Convert(varchar(10),Getdate() -15 , 112)
+    </select>
+
+    <update id="test">
+        UPDATE TB_RVAS_LIST SET IN_NAMEAA = '조윤재' WHERE VACCT_NO ='54301380097401'
+    </update>
+
+</mapper>

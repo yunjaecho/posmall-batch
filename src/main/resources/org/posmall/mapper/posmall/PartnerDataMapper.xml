@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.posmall.mapper.posmall.PartnerDataMapper">
+
+    <!-- /* select dual */ -->
+    <select id="getDual" resultType="java.util.HashMap">
+        SELECT full_nm, cate_no
+         FROM (
+                        SELECT CATE_NO,
+                                      NM,
+                                      SUBSTR (SYS_CONNECT_BY_PATH (NM, '>'), 2) AS FULL_NM,
+                                      SUBSTR (SYS_CONNECT_BY_PATH (CATE_NO, '>'), 2) AS FULL_NO,
+                                      SUBSTR (SYS_CONNECT_BY_PATH (TO_CHAR (SORT_NO, '00000'), '>'), 2)
+                                         AS SORT_NO,
+                                      DFT_PNT_GIVE_RATE,
+                                      BUY_SCRIP_TYPE_CD,
+                                      LEVEL lvl,
+                                      UP_CATE_NO
+                                 FROM CATEGORY C
+                           START WITH C.UP_CATE_NO = '1000'
+                           CONNECT BY PRIOR C.CATE_NO = C.UP_CATE_NO
+                           ORDER BY 3
+                    )
+        WHERE LVL = '3'
+        ORDER BY sort_no
+    </select>
+
+    <insert id="updateTbRvasListIf" parameterType="org.posmall.domain.TbRvasVo">
+        MERGE INTO TB_RVAS_LIST_IF A
+        USING (
+        SELECT
+        #{trDate} AS TR_DATE,
+        #{trSeq}   AS TR_SEQ,
+        #{orgBank}  AS ORG_BANK,
+        #{orgCd}  AS ORG_CD,
+        #{vacctNo} AS VACCT_NO,
+        #{statCd}  AS STAT_CD
+        FROM  DUAL) SUB_A
+        ON (SUB_A.TR_DATE  = A.TR_DATE
+        AND SUB_A.TR_SEQ   = A.TR_SEQ
+        AND SUB_A.ORG_BANK = A.ORG_BANK
+        AND SUB_A.ORG_CD   = A.ORG_CD
+        AND SUB_A.VACCT_NO = A.VACCT_NO
+        AND SUB_A.STAT_CD  = A.STAT_CD)
+        WHEN MATCHED THEN
+        UPDATE SET CUST_CD         = #{custCd},
+        CUST_NM         = #{custNm},
+        ERROR_CD        = #{errorCd},
+        TR_TIME         = #{trTime},
+        TR_AMT          = #{trAmt},
+        IN_BANK_CD      = #{inBankCd},
+        IN_BANK_BRANCH  = #{inBankBranch},
+        IN_NAME         = #{inName},
+        ENTRY_DATE      = #{entryDate},
+        ENTRY_IDNO      = #{entryIdno},
+        ERP_PROC_YN     = #{erpProcYn},
+        ERP_PROC_DT     = #{erpProcDt}
+        WHEN NOT MATCHED THEN
+        INSERT (TR_DATE,
+        TR_SEQ,
+        ORG_BANK,
+        ORG_CD,
+        VACCT_NO,
+        STAT_CD,
+        CUST_CD,
+        CUST_NM,
+        ERROR_CD,
+        TR_TIME,
+        TR_AMT,
+        IN_BANK_CD,
+        IN_BANK_BRANCH,
+        IN_NAME,
+        ENTRY_DATE,
+        ENTRY_IDNO,
+        ERP_PROC_YN,
+        ERP_PROC_DT)
+        VALUES (
+        #{trDate},
+        #{trSeq},
+        #{orgBank},
+        #{orgCd},
+        #{vacctNo},
+        #{statCd},
+        #{custCd},
+        #{custNm},
+        #{errorCd},
+        #{trTime},
+        #{trAmt},
+        #{inBankCd},
+        #{inBankBranch},
+        #{inName},
+        #{entryDate},
+        #{entryIdno},
+        #{erpProcYn},
+        #{erpProcDt})
+    </insert>
+
+</mapper>
