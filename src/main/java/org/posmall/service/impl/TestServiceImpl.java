@@ -5,9 +5,14 @@ import org.posmall.mapper.posmall.PartnerDataMapper;
 import org.posmall.mapper.webcache.WebCacheaMapper;
 import org.posmall.service.TestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,28 +35,49 @@ public class TestServiceImpl implements TestService {
     @Value("${webcache.parameter.orgCd}")
     private String orgCd;
 
+    @Autowired
+    @Qualifier("posmallTransactionManager")
+    private PlatformTransactionManager posmallTransactionManager;
 
+    @Autowired
+    @Qualifier("webcacheTransactionManager")
+    private PlatformTransactionManager webcacheTransactionManager;
+
+
+    @Transactional
     public Map<String, String> getTest() {
-        insertPosmall(getWebcacheData());
+//        insertPosmall(getWebcacheData());
+//
+//        updateWebcache();
 
-        updateWebcache();
+        TransactionDefinition transactionDefinition1 = new DefaultTransactionDefinition();
+        TransactionStatus transactionStatus1 = posmallTransactionManager.getTransaction(transactionDefinition1);
+//
+        try {
+            List<TbRvasVo> list = webCacheaMapper.getTbRvasList();
+            list.stream().forEach(s -> partnerDataMapper.updateTbRvasListIf(s));
+            webCacheaMapper.test();
 
-        Map<String, String> resultMap = new HashMap<>();
-        resultMap.put("result", "성공");
-        return resultMap;
+            Map<String, String> resultMap = new HashMap<>();
+            resultMap.put("result", "성공");
+            return resultMap;
+        } catch (Exception e) {
+            posmallTransactionManager.rollback();
+            webcacheTransactionManager.rollback();
+        }
+
     }
 
-    @Transactional(transactionManager="webcacheTransactionManager")
+
     public List<TbRvasVo> getWebcacheData() {
         return webCacheaMapper.getTbRvasList();
     }
 
-    @Transactional(transactionManager="posmallTransactionManager")
+
     public void insertPosmall(List<TbRvasVo> list) {
         list.stream().forEach(s -> partnerDataMapper.updateTbRvasListIf(s));
     }
 
-    @Transactional(transactionManager="webcacheTransactionManager")
     public void updateWebcache() {
         webCacheaMapper.test();
     }

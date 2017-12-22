@@ -2,6 +2,7 @@ package org.posmall.mapper.webcache;
 
 import org.posmall.domain.TbRvasVo;
 import org.posmall.domain.WebCacheVacctData;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
