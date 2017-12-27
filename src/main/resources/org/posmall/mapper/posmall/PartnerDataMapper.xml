@@ -95,4 +95,15 @@
         #{erpProcDt})
     </insert>
 
+    <update id="updateTbRvasListIfTest">
+        UPDATE TB_RVAS_LIST_IF SET IN_NAMEAA = '조윤재' WHERE VACCT_NO ='54301380097401'
+    </update>
+
+    <update id="updateTbRvasListIfTest1">
+        UPDATE TB_RVAS_LIST_IF SET IN_NAME = '홍길동' WHERE VACCT_NO ='54301380097401'
+    </update>
+
+
+
+
 </mapper>

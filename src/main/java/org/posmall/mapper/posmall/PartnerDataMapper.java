@@ -13,4 +13,9 @@ public interface PartnerDataMapper {
     public List<Map> getPtCategoryList();
 
     public void updateTbRvasListIf(TbRvasVo tbRvasVo);
+
+
+    public void updateTbRvasListIfTest();
+
+    public void updateTbRvasListIfTest1();
 }

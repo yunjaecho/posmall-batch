@@ -18,7 +18,17 @@ public class TestController {
 
     @GetMapping("/getTest")
     public Map<String, String> getTest() {
-        return testService.getTest();
+        return testService.updateTestPosmall();
+    }
+
+    @GetMapping("/saveCompositTest")
+    public Map<String, String> saveCompositTest() {
+        return testService.saveCompositTest();
+    }
+
+    @GetMapping("/saveCompositMethodTest")
+    public Map<String, String> saveCompositMethodTest() {
+        return testService.saveCompositMethodTest();
     }
 
 }

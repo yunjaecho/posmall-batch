@@ -1,5 +1,9 @@
 package org.posmall.config;
 
+import net.sf.log4jdbc.Log4jdbcProxyDataSource;
+import net.sf.log4jdbc.SpyLogDelegator;
+import net.sf.log4jdbc.tools.Log4JdbcCustomFormatter;
+import net.sf.log4jdbc.tools.LoggingType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -22,14 +26,24 @@ import javax.sql.DataSource;
  */
 @Configuration
 @MapperScan(value = "org.posmall.mapper.posmall", sqlSessionFactoryRef = "posmallSqlSessionFactory")
-@EnableTransactionManagement(proxyTargetClass = true)
 public class PosmallDatabaseConfig {
-    @Bean(name = "posmallDataSource")
-    @Primary
+    @Bean(name = "posmallDataSourceSpied")
     @ConfigurationProperties(prefix = "datasource.posmall")
-    public DataSource posmallDataSource() {
+    public DataSource posmallDataSourceSpied() {
         return DataSourceBuilder.create().build();
     }
+
+    @Bean(name = "posmallDataSource")
+    @Primary
+    public DataSource posmallDataSource(@Qualifier("posmallDataSourceSpied") DataSource posmallDataSourceSpied) {
+        Log4jdbcProxyDataSource dataSource = new Log4jdbcProxyDataSource(posmallDataSourceSpied);
+        Log4JdbcCustomFormatter formatter= new Log4JdbcCustomFormatter();
+        formatter.setLoggingType(LoggingType.MULTI_LINE);
+        formatter.setSqlPrefix("SQL       \n");
+        dataSource.setLogFormatter(formatter);
+        return dataSource;
+    }
+
 
     @Bean(name = "posmallSqlSessionFactory")
     @Primary
@@ -48,7 +62,8 @@ public class PosmallDatabaseConfig {
     }
 
     @Bean(name = "posmallTransactionManager")
-    public PlatformTransactionManager posmallTransactionManager(@Qualifier("posmallDataSource") DataSource posmallDataSource) {
+    @Primary
+    public PlatformTransactionManager  posmallTransactionManager(@Qualifier("posmallDataSource") DataSource posmallDataSource) {
         DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(posmallDataSource);
         transactionManager.setGlobalRollbackOnParticipationFailure(false);
         return transactionManager;

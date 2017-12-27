@@ -1,5 +1,8 @@
 package org.posmall.config;
 
+import net.sf.log4jdbc.Log4jdbcProxyDataSource;
+import net.sf.log4jdbc.tools.Log4JdbcCustomFormatter;
+import net.sf.log4jdbc.tools.LoggingType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -11,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -22,13 +26,24 @@ import javax.sql.DataSource;
  */
 @Configuration
 @MapperScan(value = "org.posmall.mapper.webcache", sqlSessionFactoryRef = "webcacheSqlSessionFactory")
-@EnableTransactionManagement(proxyTargetClass = true)
+//@EnableTransactionManagement(proxyTargetClass = true)
 public class WebcacheDatabaseConfig {
 
-    @Bean(name = "webcacheDataSource")
+    @Bean(name = "webcacheDataSourceSpied")
     @ConfigurationProperties(prefix = "datasource.webcache")
-    public DataSource webcacheDataSource() {
+    public DataSource webcacheDataSourceSpied() {
         return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "webcacheDataSource")
+    @Primary
+    public DataSource webcacheDataSource(@Qualifier("webcacheDataSourceSpied") DataSource webcacheDataSourceSpied) {
+        Log4jdbcProxyDataSource dataSource = new Log4jdbcProxyDataSource(webcacheDataSourceSpied);
+        Log4JdbcCustomFormatter formatter= new Log4JdbcCustomFormatter();
+        formatter.setLoggingType(LoggingType.MULTI_LINE);
+        formatter.setSqlPrefix("SQL:::");
+        dataSource.setLogFormatter(formatter);
+        return dataSource;
     }
 
     @Bean(name = "webcacheSqlSessionFactory")
@@ -48,8 +63,8 @@ public class WebcacheDatabaseConfig {
     }
 
     @Bean(name = "webcacheTransactionManager")
-    public PlatformTransactionManager webcacheTransactionManager(@Qualifier("webcacheDataSource") DataSource posmallDataSource) {
-        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(posmallDataSource);
+    public PlatformTransactionManager webcacheTransactionManager(@Qualifier("webcacheDataSource") DataSource webcacheDataSource) {
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(webcacheDataSource);
         transactionManager.setGlobalRollbackOnParticipationFailure(false);
         return transactionManager;
     }
