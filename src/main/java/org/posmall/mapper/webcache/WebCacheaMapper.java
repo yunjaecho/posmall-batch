@@ -16,4 +16,6 @@ public interface WebCacheaMapper {
     public List<TbRvasVo> getTbRvasList();
 
     public void test();
+
+    public void test2();
 }

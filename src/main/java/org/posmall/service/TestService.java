@@ -67,6 +67,22 @@ public class TestService {
         return resultMap;
     }
 
+    /***
+     * 웹캐시 데이터 저장 성공후 포스몰 데이터 저장 실폐시
+     * Rollback 처리 확인
+     * @return
+     */
+    public Map<String, String> saveCompositMethodTest2() {
+
+        webCacheaMapper.test2();
+
+        //partnerDataMapper.updateTbRvasListIfTest();
+
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put("result", "성공");
+        return resultMap;
+    }
+
 
 
     public List<TbRvasVo> selectWebcacheData() {

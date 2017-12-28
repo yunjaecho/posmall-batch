@@ -31,4 +31,11 @@ public class TestController {
         return testService.saveCompositMethodTest();
     }
 
+    @GetMapping("/saveCompositMethodTest2")
+    public Map<String, String> saveCompositMethodTest2() {
+        return testService.saveCompositMethodTest2();
+    }
+
+
+
 }

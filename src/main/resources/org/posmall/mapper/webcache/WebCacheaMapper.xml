@@ -66,4 +66,8 @@
         UPDATE TB_RVAS_LIST SET IN_NAMEAA = '조윤재' WHERE VACCT_NO ='54301380097401'
     </update>
 
+    <update id="test2">
+        UPDATE TB_RVAS_MAST SET CUST_NM = '조윤재2' WHERE VACCT_NO = '54301376497809'
+    </update>
+
 </mapper>
