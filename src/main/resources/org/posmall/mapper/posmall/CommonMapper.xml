@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.posmall.mapper.posmall.CommonMapper">
+
+    <insert id="insertJobErrorLog" parameterType="java.util.HashMap">
+        INSERT INTO TB_JOB_ERROR_LOG
+        (SEQ_NO,
+         JOB_NO,
+         ERR_MSG,
+         C_DT)
+        SELECT
+              NVL(MAX(SEQ_NO),0) + 1 AS SEQ_NO,
+              #{jobNo},
+              #{errMsg:CLOB},
+              SYSDATE
+        FROM  TB_JOB_ERROR_LOG
+    </insert>
+
+
+
+</mapper>

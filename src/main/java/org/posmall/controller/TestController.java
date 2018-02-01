@@ -1,10 +1,12 @@
 package org.posmall.controller;
 
 import org.posmall.service.TestService;
+import org.posmall.service.VirtualVaccService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,6 +17,9 @@ public class TestController {
 
     @Autowired
     private TestService testService;
+
+    @Autowired
+    private VirtualVaccService virtualVaccService;
 
     @GetMapping("/getTest")
     public Map<String, String> getTest() {
@@ -36,6 +41,15 @@ public class TestController {
         return testService.saveCompositMethodTest2();
     }
 
+    /**
+     * 가상계좌 입금기한 초과 데이터 취소 처리
+     */
+    @GetMapping("/processVacctOrderCancle")
+    public void processVacctOrderCancle() {
+        Map jobInfo = new HashMap<String, String>();
+        jobInfo.put("jobNo", "1");
 
+        virtualVaccService.saveVacctOrderCancle(jobInfo);
+    }
 
 }

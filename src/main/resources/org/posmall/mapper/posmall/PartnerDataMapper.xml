@@ -103,6 +103,264 @@
         UPDATE TB_RVAS_LIST_IF SET IN_NAME = '홍길동' WHERE VACCT_NO ='54301380097401'
     </update>
 
+    <select id="selectVacctOrderCancle" resultType="org.posmall.util.CamelCaseMap">
+        SELECT
+              M_A.*
+        FROM (
+             SELECT
+                   A.VIRTUAL_ACC_NO,
+                   A.VACCT_PAYIN_NO,
+                   A.PAYIN_AMT,
+                   A.PAYIN_AMT AS DET_PAYIN_AMT,
+                   TO_NUMBER(A.CUST_CD) MEM_NO,
+                   B.PAY_NO,
+                   B.OD_NO,
+                   B.PAYIN_SEQ_NO,
+                   B.PAYIN_STATE_CD,
+                   C.PAY_TYPE_CD,
+                   C.MEM_PAY_TYPE_CD,
+                   D.CB_CODE,
+                   D.CB_NUMBER,
+                   RANK() OVER(PARTITION BY A.VACCT_PAYIN_NO ORDER BY B.PAYIN_SEQ_NO) VACCT_PAYIN_NO_RANK,
+                   SUM((CASE
+                            WHEN B.PAYIN_STATE_CD = 'J1201' THEN B.PAYIN_AMT
+                            WHEN B.PAYIN_STATE_CD = 'J1207' THEN B.PAYIN_AMT * -1
+                        END)) OVER(PARTITION BY A.VACCT_PAYIN_NO, B.OD_NO) AS OD_PAYIN_AMT
+            FROM  TB_VACCT_PAYIN     A,
+                  TB_VACCT_PAYIN_DET B,
+                  ORD_PAY            C,
+                  ORD_PAY_DET        D
+            WHERE 1=1
+              AND A.VACCT_PAYIN_NO = B.VACCT_PAYIN_NO
+              AND B.PAY_NO         = C.PAY_NO
+              AND C.PAY_NO         = D.PAY_NO
+              AND D.PAY_DET_SEQ    = 1
+              AND A.ORG_BANK_CD = '003'
+              AND A.ORG_CD = '20000773'
+              AND A.PAYIN_TO_YMD || A.PAYIN_TO_TIME <![CDATA[<]]> TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+              AND B.OD_NO LIKE 'F%'
+              AND A.ERP_PROC_YN = 'N'
+              AND A.VIRTUAL_ACC_NO IS NOT NULL
+          ) M_A
+        WHERE (1 = 1)
+          AND PAYIN_STATE_CD = 'J1201'
+          AND OD_PAYIN_AMT > 0
+        ORDER BY VIRTUAL_ACC_NO, VACCT_PAYIN_NO_RANK
+
+    </select>
+
+
+    <!--  가상계좌 입금기간 초과시 취소 처리 -->
+    <update id="saveVacctOrderCancle" parameterType="org.posmall.util.CamelCaseMap">
+        DECLARE
+          V_PAY_NO VARCHAR(100);
+
+        BEGIN
+
+          <if test="vacctPayinNoRank == 1">
+            /*   가상계좌 마스터 정보 업데이트    */
+            UPDATE TB_VACCT_PAYIN
+            SET    ERP_PROC_YN = 'Y',
+                   UP_NO       = '999999',
+                   UP_DT       = SYSDATE
+            WHERE  VACCT_PAYIN_NO = #{vacctPayinNo};
+          </if>
+
+            /*   결제번호 채번  */
+            SELECT FC_GET_PAYNO('P') INTO V_PAY_NO FROM DUAL;
+
+            /*     결제 마스터정보 등록(취소)           */
+            /*     포인결제는 사용하지 않음                         */
+            INSERT INTO ORD_PAY
+            (PAY_NO,
+            OD_NO,
+            PAY_TYPE_CD,
+            PAY_AMT,
+            PAY_PROC_TYPE,
+            MEM_PAY_TYPE_CD,
+            INFO,
+            C_NM,
+            C_NO,
+            C_DT)
+            VALUES
+            (V_PAY_NO,
+             #{odNo},
+             'J0402',
+             #{odPayinAmt},
+             'C',
+             #{memPayTypeCd},
+             'system자동취소',
+             'SYSTEM',
+             '999999',
+             SYSDATE);
+
+            /*     결제 상세정보 등록(취소)           */
+            INSERT INTO ORD_PAY_DET
+            (PAY_NO,
+             PAY_DET_SEQ,
+             CB_CODE,
+             CB_NUMBER,
+             C_NM,
+             C_NO,
+             C_DT)
+            VALUES
+            (V_PAY_NO,
+             1,
+             #{cbCode},
+             #{cbNumber},
+             'SYSTEM',
+             '999999',
+             SYSDATE);
+
+            /*     가상계좌 상세정보 업데이트                         */
+            UPDATE TB_VACCT_PAYIN_DET
+            SET    PAY_NO         = V_PAY_NO,
+                   PAYIN_STATE_CD = 'J1206',
+                   UP_NO          = '999999',
+                   UP_DT          = SYSDATE
+            WHERE  1=1
+            AND  VACCT_PAYIN_NO = #{vacctPayinNo}
+            AND  PAYIN_SEQ_NO   = #{payinSeqNo};
+
+            /*     수수료 취소 정보 등록                         */
+            INSERT INTO TB_PAY_STTL_FEE
+            (OD_NO,
+             DELV_NO,
+             OD_ITEM_NO,
+             SEQ_NO,
+             OD_TYPE_CD,
+             PAY_NO,
+             GD_NO,
+             MAX_COMMON_FEE_RATE,
+             CASH_FEE_RATE,
+             CARD_FEE_RATE,
+             PGVAN_FEE_RATE,
+             STTL_ACT_FEE_RATE,
+             SALE_LINE_FEE_RATE,
+             MAKT_FEE_RATE,
+             ETC_COMMON_FEE_RATE1,
+             ETC_COMMON_FEE_RATE2,
+             ETC_COMMON_FEE_RATE3,
+             GD_FEE_RATE,
+             PTN_GRADE,
+             GRADE_FEE_RATE,
+             DELV_FEE,
+             DIST_FEE_RATE,
+             ETC_EACH_FEE_RATE1,
+             ETC_EACH_FEE_RATE2,
+             ETC_EACH_FEE_RATE3,
+             BUY_CARD_CO_CD,
+             PAYIN_KIND_CD,
+             EAT_PAYIN_YMD,
+             SALE_AMT_MOD,
+             LAST_SALE_AMT,
+             SALE_AMT_MOD_REASON,
+             USE_YN,
+             AT_FEE_RATE,
+             AT_FEE_AMT,
+             IN_NO,
+             IN_DT,
+             UP_NO,
+             UP_DT)
+            SELECT
+                  OD_NO,
+                  DELV_NO,
+                  OD_ITEM_NO,
+                  SEQ_NO,
+                  'J0104' AS OD_TYPE_CD,
+                  V_PAY_NO,
+                  GD_NO,
+                  MAX_COMMON_FEE_RATE,
+                  CASH_FEE_RATE,
+                  CARD_FEE_RATE,
+                  PGVAN_FEE_RATE,
+                  STTL_ACT_FEE_RATE,
+                  SALE_LINE_FEE_RATE,
+                  MAKT_FEE_RATE,
+                  ETC_COMMON_FEE_RATE1,
+                  ETC_COMMON_FEE_RATE2,
+                  ETC_COMMON_FEE_RATE3,
+                  GD_FEE_RATE,
+                  PTN_GRADE,
+                  GRADE_FEE_RATE,
+                  DELV_FEE,
+                  DIST_FEE_RATE,
+                  ETC_EACH_FEE_RATE1,
+                  ETC_EACH_FEE_RATE2,
+                  ETC_EACH_FEE_RATE3,
+                  BUY_CARD_CO_CD,
+                  'J1101'                     AS PAYIN_KIND_CD,
+                  TO_CHAR(SYSDATE,'YYYYMMDD') AS EAT_PAYIN_YMD,
+                  (SELECT SALE_AMT FROM ORD_DET WHERE OD_NO = A.OD_NO AND DELV_NO = A.DELV_NO AND OD_ITEM_NO = A.OD_ITEM_NO AND SEQ_NO = A.SEQ_NO) AS SALE_AMT_MOD,
+                  '0' AS LAST_SALE_AMT,
+                  'system자동취소(가상계좌)' AS SALE_AMT_MOD_REASON,
+                  USE_YN,
+                  AT_FEE_RATE,
+                  AT_FEE_AMT,
+                  IN_NO,
+                  SYSDATE AS IN_DT,
+                  UP_NO,
+                  SYSDATE AS UP_DT
+            FROM  TB_PAY_STTL_FEE A
+            WHERE OD_NO       = #{odNo}
+              AND OD_TYPE_CD  = 'J0101'
+              AND NOT EXISTS(SELECT
+                                   1
+                             FROM  TB_PAY_STTL_FEE SUB_A
+                             WHERE A.OD_NO          = SUB_A.OD_NO
+                               AND A.DELV_NO        = SUB_A.DELV_NO
+                               AND A.OD_ITEM_NO     = SUB_A.OD_ITEM_NO
+                               AND A.SEQ_NO         = SUB_A.SEQ_NO
+                               AND SUB_A.OD_TYPE_CD = 'J0104') ;
+
+            /*     사용쿠폰 정보 미사용으로 업데이트                         */
+            UPDATE MY_COUPON
+            SET    CPON_STATE_CD = 'C0701',
+                   USE_YMD       = NULL,
+                   STOP_YMD      = NULL,
+                   STOPER_NO     = NULL,
+                   STOP_INFO     = NULL
+            WHERE  MY_CPON_NO IN (SELECT
+                                        SUB_A.MY_CPON_NO
+                                  FROM  ORD_DET SUB_A
+                                  WHERE OD_NO       = #{odNo}
+                                    AND OD_TYPE_CD  = 'J0101'
+                                    AND MY_CPON_NO  IS NOT NULL);
+
+
+            /*    재고정보의 취소 수량 업데이트              */
+            UPDATE ITEM A
+            SET    CNC_CNT = CNC_CNT +
+                            (SELECT
+                                   SUM(PAY_CNT)
+                             FROM  ORD_DET SUB_A
+                             WHERE SUB_A.OD_NO     = #{odNo}
+                              AND SUB_A.OD_TYPE_CD = 'J0101'
+                              AND SUB_A.ITEM_NO    = A.ITEM_NO),
+                   U_NO = '999999',
+                   U_NM = 'SYSTEM',
+                   U_DT = SYSDATE
+            WHERE ITEM_NO IN (SELECT
+                                    SUB_A.ITEM_NO
+                              FROM  ORD_DET SUB_A
+                              WHERE OD_NO      = #{odNo}
+                                AND OD_TYPE_CD = 'J0101');
+
+            /*     주문상세정보 상태 업데이트                         */
+            UPDATE ORD_DET
+            SET    OD_TYPE_CD    = 'J0104',
+                   OD_STATE_CD   = 'J0218',
+                   NORM_CNC_DATE = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+                   U_NO          = '23423',
+                   U_NM          = 'SYSTEM',
+                   U_DT          = SYSDATE
+            WHERE  OD_NO         = #{odNo}
+              AND  OD_TYPE_CD    = 'J0101'
+              AND  OD_STATE_CD   = 'J0201';
+
+
+        END;
+    </update>
 
 
 

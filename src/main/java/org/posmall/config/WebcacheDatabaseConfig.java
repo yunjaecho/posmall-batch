@@ -31,7 +31,6 @@ import javax.sql.DataSource;
 public class WebcacheDatabaseConfig {
 
     @Bean(name = "webcacheDataSource")
-    @Primary
     @ConfigurationProperties(prefix = "datasource.webcache")
     public DataSource webcacheDataSource() {
         return DataSourceBuilder.create().build();
