@@ -3,6 +3,8 @@ package org.posmall.aspect;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
+import org.posmall.jpa.entity.TbJobErrorLog;
+import org.posmall.jpa.repositores.TbJobErrorLogRepository;
 import org.posmall.mapper.posmall.CommonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -11,11 +13,12 @@ import org.springframework.stereotype.Component;
 
 
 import javax.sql.DataSource;
+import java.io.StringReader;
+import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by USER on 2018-02-01.
@@ -30,6 +33,9 @@ public class BatchLoggingAspect {
 
     private Connection connection;
 
+    @Autowired
+    private TbJobErrorLogRepository repository;
+
 
     //@AfterThrowing(pointcut="execution(* org.posmall.service.*.*(..))",throwing = "ex")
     @AfterThrowing(pointcut="execution(* org.posmall.service.VirtualVaccService.saveVacctOrderCancle(..))",throwing = "ex")
@@ -38,11 +44,20 @@ public class BatchLoggingAspect {
             Object[] signatureArgs = joinPoint.getArgs();
 
             String jobNo = "";
+            String errMsg = ex.getMessage();
             if (signatureArgs != null && ("java.util.HashMap").equals(signatureArgs[0].getClass().getName())) {
                 jobNo = (String)((HashMap)signatureArgs[0]).get("jobNo");
             }
 
-            Map map = new HashMap<String, String>();
+            errMsg = errMsg.substring(0, errMsg.offsetByCodePoints(0, 4000));
+
+            TbJobErrorLog tbJobErrorLog = new TbJobErrorLog();
+            tbJobErrorLog.setJobNo(Long.parseLong(jobNo));
+            tbJobErrorLog.setErrMsg(errMsg);
+            tbJobErrorLog.setCDt(new Date());
+            repository.save(tbJobErrorLog);
+
+            /*Map map = new HashMap<String, String>();
             map.put("jobNo", "1");
             map.put("errMsg", ex.getMessage());
 
@@ -60,7 +75,8 @@ public class BatchLoggingAspect {
             pstmt.setString(2, ex.getMessage());
             pstmt.execute();
 
-            connection.commit();
+            connection.commit();*/
+
             //commonMapper.insertJobErrorLog(map);
 
         } catch (Exception e) {
