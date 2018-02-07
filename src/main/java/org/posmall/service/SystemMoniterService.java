@@ -34,7 +34,7 @@ public class SystemMoniterService {
         return Arrays.stream(operatingSystemMXBean.getClass().getDeclaredMethods())
                 .filter(s -> s.getName().startsWith("get") && Modifier.isPublic(s.getModifiers()))
                 .map(s -> {
-                    Map<String, String> map = new HashMap<String, String>();
+                    Map<String, String> map = new HashMap();
                     s.setAccessible(true);
                     try {
                         map.put(s.getName(), String.valueOf(s.invoke(operatingSystemMXBean)));

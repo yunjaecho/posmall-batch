@@ -41,6 +41,8 @@ public class ThunderMailService {
         ArrayList<HashMap<String,Object>> list = CommonUtil.convertResultSetToArrayList(result);
 
         list.stream().forEach(s -> thunderMailMapper.insertScTran(s));
+
+        stmt.close();
     }
 
     public void saveOrdDelvGuideSMS(Map jobInfo) {
