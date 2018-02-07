@@ -3,7 +3,7 @@
 <mapper namespace="org.posmall.mapper.webcache.WebCacheaMapper">
 
     <!-- /* select dual */ -->
-    <select id="getWebCacheVacctData" resultType="org.posmall.domain.WebCacheVacctData" parameterType="java.util.HashMap">
+    <select id="getWebCacheVacctData" resultType="org.posmall.domain.WebCacheVacctVo" parameterType="java.util.HashMap">
         SELECT  M.ORG_BANK
                 ,M.ORG_CD
                 ,M.VACCT_NO
@@ -29,12 +29,16 @@
                 ,L.ENTRY_IDNO
         FROM TB_RVAS_MAST M
         INNER JOIN TB_RVAS_LIST L
-        ON M.ORG_BANK = L.ORG_BANK AND M.ORG_CD = L.ORG_CD AND M.VACCT_NO = L.VACCT_NO AND (CASE WHEN L.ERP_PROC_YN IS NULL THEN 'N' ELSE L.ERP_PROC_YN END) != 'Y'
+        ON M.ORG_BANK = L.ORG_BANK AND
+           M.ORG_CD = L.ORG_CD AND
+           M.VACCT_NO = L.VACCT_NO AND
+           L.ERP_PROC_YN != 'Y'
         WHERE 1=1
         AND M.STAT_CD != '2'
         AND M.ORG_BANK = #{orgBank}
         AND M.ORG_CD = #{orgCd}
-        AND (CASE WHEN L.ERP_PROC_YN IS NULL THEN 'N' ELSE L.ERP_PROC_YN END) != 'Y'
+        AND L.ERP_PROC_YN != 'Y'
+        AND (M.PAY_TO_DATE + M.PAY_TO_TIME) >= REPLACE(Convert(varchar(10),Getdate(),111), '/', '') + REPLACE(Convert(varchar(8),Getdate(),108), ':', '')
         AND M.CUST_CD IS NOT NULL
         ORDER BY L.TR_DATE ASC, L.TR_SEQ ASC, L.STAT_CD ASC
     </select>
@@ -59,7 +63,8 @@
                ENTRY_IDNO,
                ERP_PROC_YN,
                ERP_PROC_DT
-        FROM TB_RVAS_LIST WHERE TR_DATE >= Convert(varchar(10),Getdate() -15 , 112)
+        FROM   TB_RVAS_LIST
+        WHERE  TR_DATE >= Convert(varchar(10),Getdate() -15 , 112)
     </select>
 
     <update id="test">

@@ -1,5 +1,6 @@
 package org.posmall.config;
 
+import com.zaxxer.hikari.HikariDataSource;
 import net.sf.log4jdbc.Log4jdbcProxyDataSource;
 import net.sf.log4jdbc.SpyLogDelegator;
 import net.sf.log4jdbc.tools.Log4JdbcCustomFormatter;
@@ -50,6 +51,7 @@ public class PosmallDatabaseConfig {
     public SqlSessionFactory posmallSqlSessionFactory(@Qualifier("posmallDataSource") DataSource posmallDataSource, ApplicationContext applicationContext) throws Exception {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(posmallDataSource);
+        sqlSessionFactoryBean.setConfigLocation(applicationContext.getResource("classpath:mybatis/posmall_mybatis_config.xml"));
         sqlSessionFactoryBean.setMapperLocations(applicationContext.getResources("classpath:org/posmall/mapper/posmall/*.xml"));
         return sqlSessionFactoryBean.getObject();
     }

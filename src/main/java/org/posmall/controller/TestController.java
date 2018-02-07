@@ -1,12 +1,16 @@
 package org.posmall.controller;
 
+import org.posmall.service.SystemMoniterService;
 import org.posmall.service.TestService;
+import org.posmall.service.ThunderMailService;
 import org.posmall.service.VirtualVaccService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +24,12 @@ public class TestController {
 
     @Autowired
     private VirtualVaccService virtualVaccService;
+
+    @Autowired
+    private ThunderMailService thunderMailService;
+
+    @Autowired
+    private SystemMoniterService systemMoniterService;
 
     @GetMapping("/getTest")
     public Map<String, String> getTest() {
@@ -41,6 +51,19 @@ public class TestController {
         return testService.saveCompositMethodTest2();
     }
 
+    @GetMapping("/getSystemMXBean")
+    public List getSystemMXBean() {
+        return systemMoniterService.getSystemMXBean();
+    }
+
+    @GetMapping("/getDatabasePoolInfo")
+    public Map getDatabasePoolInfo() {
+        return systemMoniterService.getDatabasePoolInfo();
+    }
+
+
+
+
     /**
      * 가상계좌 입금기한 초과 데이터 취소 처리
      */
@@ -49,7 +72,19 @@ public class TestController {
         Map jobInfo = new HashMap<String, String>();
         jobInfo.put("jobNo", "1");
 
-        virtualVaccService.saveVacctOrderCancle(jobInfo);
+        virtualVaccService.saveVacctOrderCancleProcess(jobInfo);
+    }
+
+    /**
+     * SMS 발송내역 인터페이스
+     * @throws SQLException
+     */
+    @GetMapping("/saveScTranProcess")
+    public void saveScTranProcess() throws SQLException {
+        Map jobInfo = new HashMap<String, String>();
+        jobInfo.put("jobNo", "2");
+
+        thunderMailService.saveScTranProcess(jobInfo);
     }
 
 }

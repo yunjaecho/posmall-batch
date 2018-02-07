@@ -1,11 +1,7 @@
 package org.posmall.jpa.entity;
 
 import lombok.Data;
-import org.hibernate.engine.jdbc.CharacterStream;
-
 import javax.persistence.*;
-import java.io.StringReader;
-import java.sql.Clob;
 import java.util.Date;
 
 /**
@@ -31,8 +27,11 @@ public class TbJobErrorLog {
     //@Lob
     //@Column(name = "ERR_MSG" , columnDefinition="CLOB", nullable=true)
     //@Basic(fetch = FetchType.LAZY)
-    @Column(name = "ERR_MSG'")
+    @Column(name = "ERR_MSG")
     private String errMsg;
+
+    @Column(name = "ERR_MSG2")
+    private String errMsg2;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "C_DT")

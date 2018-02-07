@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * Created by USER on 2017-11-30.
  */
 @Data
-public class WebCacheVacctData {
+public class WebCacheVacctVo {
     private String orgBank;
 
     private String orgCd;

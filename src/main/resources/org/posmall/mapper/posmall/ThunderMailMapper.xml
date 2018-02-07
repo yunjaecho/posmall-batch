@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.posmall.mapper.posmall.ThunderMailMapper">
+
+    <insert id="insertScTran" parameterType="java.util.HashMap">
+      MERGE INTO SC_TRAN_IF A
+		USING(SELECT
+		            #{TR_NUM}          AS TR_NUM,
+                    #{TR_SENDDATE}     AS TR_SENDDATE,
+                    #{TR_ID}           AS TR_ID,
+                    #{TR_SENDSTAT}     AS TR_SENDSTAT,
+                    #{TR_RSLTSTAT}     AS TR_RSLTSTAT,
+                    #{TR_MSGTYPE}      AS TR_MSGTYPE,
+                    #{TR_PHONE}        AS TR_PHONE,
+                    #{TR_CALLBACK}     AS TR_CALLBACK,
+                    #{TR_RSLTDATE}     AS TR_RSLTDATE,
+                    #{TR_MODIFIED}     AS TR_MODIFIED,
+                    #{TR_MSG}          AS TR_MSG,
+                    #{TR_NET}          AS TR_NET,
+                    #{TR_ETC1}         AS TR_ETC1,
+                    #{TR_ETC2}         AS TR_ETC2,
+                    #{TR_ETC}          AS TR_ETC,
+                    #{TR_ETC4}         AS TR_ETC4,
+                    #{TR_ETC5}         AS TR_ETC5,
+                    #{TR_ETC6}         AS TR_ETC6,
+                    #{TR_REALSENDDATE} AS TR_REALSENDDATE,
+                    #{TR_ROUTEID}      AS TR_ROUTEID
+		      FROM  DUAL) B
+		  ON (A.TR_NUM = B.TR_NUM)
+		WHEN MATCHED THEN
+		UPDATE SET  A.TR_SENDDATE  = B.TR_SENDDATE,
+                    A.TR_ID        = B.TR_ID,
+                    A.TR_SENDSTAT  = B.TR_SENDSTAT,
+                    A.TR_RSLTSTAT  = B.TR_RSLTSTAT,
+                    A.TR_MSGTYPE   = B.TR_MSGTYPE,
+                    A.TR_PHONE     = B.TR_PHONE,
+                    A.TR_CALLBACK  = B.TR_CALLBACK,
+                    A.TR_RSLTDATE  = B.TR_RSLTDATE,
+                    A.TR_MODIFIED  = B.TR_MODIFIED,
+                    A.TR_MSG       = B.TR_MSG,
+                    A.TR_NET       = B.TR_NET,
+                    A.TR_ETC1      = B.TR_ETC1,
+                    A.TR_ETC2      = B.TR_ETC2,
+                    A.TR_ETC       = B.TR_ETC,
+                    A.TR_ETC4      = B.TR_ETC4,
+                    A.TR_ETC5      = B.TR_ETC5,
+                    A.TR_ETC6      = B.TR_ETC6,
+                    A.TR_REALSENDDATE = B.TR_REALSENDDATE,
+                    A.TR_ROUTEID      = B.TR_ROUTEID
+		WHEN NOT MATCHED THEN
+		INSERT (A.TR_NUM,
+		        A.TR_SENDDATE,
+                A.TR_ID,
+                A.TR_SENDSTAT,
+                A.TR_RSLTSTAT,
+                A.TR_MSGTYPE,
+                A.TR_PHONE,
+                A.TR_CALLBACK,
+                A.TR_RSLTDATE,
+                A.TR_MODIFIED,
+                A.TR_MSG,
+                A.TR_NET,
+                A.TR_ETC1,
+                A.TR_ETC2,
+                A.TR_ETC,
+                A.TR_ETC4,
+                A.TR_ETC5,
+                A.TR_ETC6,
+                A.TR_REALSENDDATE,
+                A.TR_ROUTEID)
+		VALUES (B.TR_NUM,
+		        B.TR_SENDDATE,
+                B.TR_ID,
+                B.TR_SENDSTAT,
+                B.TR_RSLTSTAT,
+                B.TR_MSGTYPE,
+                B.TR_PHONE,
+                B.TR_CALLBACK,
+                B.TR_RSLTDATE,
+                B.TR_MODIFIED,
+                B.TR_MSG,
+                B.TR_NET,
+                B.TR_ETC1,
+                B.TR_ETC2,
+                B.TR_ETC,
+                B.TR_ETC4,
+                B.TR_ETC5,
+                B.TR_ETC6,
+                B.TR_REALSENDDATE,
+                B.TR_ROUTEID)
+    </insert>
+
+
+
+</mapper>

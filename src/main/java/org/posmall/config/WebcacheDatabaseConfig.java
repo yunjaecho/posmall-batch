@@ -30,22 +30,22 @@ import javax.sql.DataSource;
 //@EnableTransactionManagement(proxyTargetClass = true)
 public class WebcacheDatabaseConfig {
 
-    @Bean(name = "webcacheDataSource")
+    @Bean(name = "webcacheDataSourceSpied")
     @ConfigurationProperties(prefix = "datasource.webcache")
-    public DataSource webcacheDataSource() {
+    public DataSource webcacheDataSourceSpied() {
         return DataSourceBuilder.create().build();
     }
 
-    /*@Bean(name = "webcacheDataSource")
-    @Primary
+    @Bean(name = "webcacheDataSource")
     public DataSource webcacheDataSource(@Qualifier("webcacheDataSourceSpied") DataSource webcacheDataSourceSpied) {
         Log4jdbcProxyDataSource dataSource = new Log4jdbcProxyDataSource(webcacheDataSourceSpied);
         Log4JdbcCustomFormatter formatter= new Log4JdbcCustomFormatter();
         formatter.setLoggingType(LoggingType.MULTI_LINE);
-        formatter.setSqlPrefix("SQL:::");
+        formatter.setSqlPrefix("SQL       \n");
         dataSource.setLogFormatter(formatter);
         return dataSource;
-    }*/
+    }
+
 
     @Bean(name = "webcacheSqlSessionFactory")
     public SqlSessionFactory webcacheSqlSessionFactory(@Qualifier("webcacheDataSource") DataSource webcacheDataSource, ApplicationContext applicationContext) throws Exception {
