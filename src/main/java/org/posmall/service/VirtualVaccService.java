@@ -39,7 +39,19 @@ public class VirtualVaccService {
         params.put("orgCd", orgCd);
 
         List<WebCacheVacctVo> list = webCacheaMapper.getWebCacheVacctData(params);
+        list.stream().forEach(s -> saveVaccDepositConfirm(jobInfo, s));
     }
+
+    /**
+     * 가상계좌별 임금 처리
+     * @param jobInfo
+     * @param webCacheVacctVo
+     */
+    public void saveVaccDepositConfirm(Map jobInfo, final WebCacheVacctVo webCacheVacctVo) {
+        // 포스몰 가상계좌 입금완료 처리 및 SMS 임시 저장 처리
+
+    }
+
 
     /**
      * 가상계좌 입금기간 일시 초과 데이터 조회 및 처리

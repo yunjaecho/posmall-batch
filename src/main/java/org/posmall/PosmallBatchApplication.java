@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableAspectJAutoProxy
+@EnableScheduling
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 public class PosmallBatchApplication implements CommandLineRunner {
 

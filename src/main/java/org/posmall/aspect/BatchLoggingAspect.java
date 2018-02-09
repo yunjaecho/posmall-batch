@@ -94,7 +94,7 @@ public class BatchLoggingAspect {
      * @param ex
      */
     //@AfterThrowing(pointcut="execution(* org.posmall.service.*.*(..))",throwing = "ex")
-    @AfterThrowing(pointcut="execution(* org.posmall.service.*.*Process(..))",throwing = "ex")
+    @AfterThrowing(pointcut="execution(* org.posmall.service.*.*Process(..)) || execution(* org.posmall.service.VirtualVaccService.saveVaccDepositConfirm(..))",throwing = "ex")
     public void errorLogging(JoinPoint joinPoint, Throwable ex) {
         try {
             String jobNo = "";
