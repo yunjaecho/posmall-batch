@@ -2,6 +2,7 @@ package org.posmall.jpa.entity;
 
 import lombok.Data;
 import org.hibernate.annotations.Immutable;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 
@@ -36,6 +37,12 @@ public class JobSchedule {
     @Column(name = "EXEC_SERVICE_METHOD")
     private String execServiceMethod;
 
+    @Transient
+    private Long jobExecNo;
+
+    @Transient
+    private JobStatus jobStatus;
+
     @Override
     public String toString() {
         return "JobSchedule{" +
@@ -47,5 +54,10 @@ public class JobSchedule {
                 ", execServiceName='" + execServiceName + '\'' +
                 ", execServiceMethod='" + execServiceMethod + '\'' +
                 '}';
+    }
+
+    public JobStatus getJobStatus() {
+        if (jobStatus == null) return JobStatus.START;
+        else return jobStatus;
     }
 }

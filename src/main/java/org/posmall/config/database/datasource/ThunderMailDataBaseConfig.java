@@ -1,4 +1,4 @@
-package org.posmall.config;
+package org.posmall.config.database.datasource;
 
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;

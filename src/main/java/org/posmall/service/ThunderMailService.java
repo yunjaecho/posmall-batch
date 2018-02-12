@@ -1,5 +1,6 @@
 package org.posmall.service;
 
+import org.posmall.jpa.entity.JobSchedule;
 import org.posmall.mapper.posmall.ThunderMailMapper;
 import org.posmall.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class ThunderMailService {
     /**
      * SMS 발송내역 인터페이스
      */
-    public void saveScTranProcess(Map jobInfo) throws SQLException {
+    public void saveScTranProcess(JobSchedule jobSchedule) throws SQLException {
         String sql = "SELECT * FROM SC_LOG_" + CommonUtil.formatNow("yyyyMM") + " WHERE TR_SENDDATE >  DATE_ADD(NOW(), INTERVAL -1 HOUR) AND TR_ETC6 IN ('POS-MALL', 'FARMDB')";
 
         Statement stmt = conn.createStatement();
@@ -45,7 +46,7 @@ public class ThunderMailService {
         stmt.close();
     }
 
-    public void saveOrdDelvGuideSMS(Map jobInfo) {
+    public void saveOrdDelvGuideSMS(JobSchedule jobSchedule) {
 
     }
 

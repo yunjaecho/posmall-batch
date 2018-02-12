@@ -1,7 +1,9 @@
-package org.posmall.config;
+package org.posmall.config.database.transcation;
 
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -18,37 +20,37 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.Collections;
 
 /**
- * Created by USER on 2017-12-28.
+ * Created by USER on 2017-12-26.
  */
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @Configuration
-public class TxAdviceWebcacheInterceptor {
+//@EnableTransactionManagement
+public class TxAdvicePosmallInterceptor {
     private static final String TX_METHOD_NAME = "*";
     private static final int TX_METHOD_TIMEOUT = 1000 * 10;
     private static final String AOP_POINTCUT_EXPRESSION = "execution(* org.posmall.service.*Service.insert*(..)) || execution(* org.posmall.service.*Service.update*(..)) || execution(* org.posmall.service.*Service.save*(..))  || execution(* org.posmall.service.*Service.delete*(..))";
 
-    @Qualifier("webcacheTransactionManager")
-    private PlatformTransactionManager webcacheTransactionManager;
+    @Qualifier("posmallTransactionManager")
+    private PlatformTransactionManager posmallTransactionManager;
 
-    @Bean(name = "txWebcacheAdvice")
-    public TransactionInterceptor txWebcacheAdvice() {
+    @Bean(name = "txPosmallAdvice")
+    public TransactionInterceptor txPosmallAdvice() {
         MatchAlwaysTransactionAttributeSource source = new MatchAlwaysTransactionAttributeSource();
         RuleBasedTransactionAttribute transactionAttribute = new RuleBasedTransactionAttribute();
         transactionAttribute.setName(TX_METHOD_NAME);
         transactionAttribute.setRollbackRules(
                 Collections.singletonList(new RollbackRuleAttribute(Exception.class)));
-        transactionAttribute.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
         transactionAttribute.setTimeout(TX_METHOD_TIMEOUT);
+        transactionAttribute.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
         source.setTransactionAttribute(transactionAttribute);
-
-        TransactionInterceptor txAdvice = new TransactionInterceptor(webcacheTransactionManager, source);
+        TransactionInterceptor txAdvice = new TransactionInterceptor(posmallTransactionManager, source);
         return txAdvice;
     }
 
-    @Bean(name = "txWebcacheAdviceAdvisor")
-    public Advisor txWebcacheAdviceAdvisor() {
+    @Bean(name = "txPosmallAdviceAdvisor")
+    public Advisor txPosmallAdviceAdvisor() {
         AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
         pointcut.setExpression(AOP_POINTCUT_EXPRESSION);
-        return new DefaultPointcutAdvisor(pointcut, txWebcacheAdvice());
+        return new DefaultPointcutAdvisor(pointcut, txPosmallAdvice());
     }
 }

@@ -1,6 +1,7 @@
 package org.posmall.service;
 
 import org.posmall.domain.WebCacheVacctVo;
+import org.posmall.jpa.entity.JobSchedule;
 import org.posmall.mapper.posmall.PartnerDataMapper;
 import org.posmall.mapper.webcache.WebCacheaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,21 +34,21 @@ public class VirtualVaccService {
     /**
      * 가상계좌 입금처리
      */
-    public void vaccDepositProcess(Map jobInfo) {
+    public void vaccDepositProcess(JobSchedule jobSchedule) {
         Map params = new HashMap<String, String>();
         params.put("orgBank", orgBank);
         params.put("orgCd", orgCd);
 
         List<WebCacheVacctVo> list = webCacheaMapper.getWebCacheVacctData(params);
-        list.stream().forEach(s -> saveVaccDepositConfirm(jobInfo, s));
+        list.stream().forEach(s -> saveVaccDepositConfirm(jobSchedule, s));
     }
 
     /**
      * 가상계좌별 임금 처리
-     * @param jobInfo
+     * @param jobSchedule
      * @param webCacheVacctVo
      */
-    public void saveVaccDepositConfirm(Map jobInfo, final WebCacheVacctVo webCacheVacctVo) {
+    public void saveVaccDepositConfirm(JobSchedule jobSchedule, final WebCacheVacctVo webCacheVacctVo) {
         // 포스몰 가상계좌 입금완료 처리 및 SMS 임시 저장 처리
 
     }
@@ -55,8 +56,9 @@ public class VirtualVaccService {
 
     /**
      * 가상계좌 입금기간 일시 초과 데이터 조회 및 처리
+     * @param jobSchedule
      */
-    public void saveVacctOrderCancleProcess(Map jobInfo) {
+    public void saveVacctOrderCancleProcess(JobSchedule jobSchedule) {
             partnerDataMapper.selectVacctOrderCancle()
                     .stream()
                     .forEach(s -> partnerDataMapper.saveVacctOrderCancle(s));

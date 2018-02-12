@@ -1,5 +1,6 @@
 package org.posmall.controller;
 
+import org.posmall.jpa.entity.JobSchedule;
 import org.posmall.service.SystemMoniterService;
 import org.posmall.service.TestService;
 import org.posmall.service.ThunderMailService;
@@ -69,10 +70,12 @@ public class TestController {
      */
     @GetMapping("/processVacctOrderCancle")
     public void processVacctOrderCancle() {
-        Map jobInfo = new HashMap<String, String>();
-        jobInfo.put("jobNo", "1");
+        //Map jobInfo = new HashMap<String, String>();
+        //jobInfo.put("jobNo", "1");
+        JobSchedule jobSchedule = new JobSchedule();
+        jobSchedule.setJobNo(1L);
 
-        virtualVaccService.saveVacctOrderCancleProcess(jobInfo);
+        virtualVaccService.saveVacctOrderCancleProcess(jobSchedule);
     }
 
     /**
@@ -81,10 +84,12 @@ public class TestController {
      */
     @GetMapping("/saveScTranProcess")
     public void saveScTranProcess() throws SQLException {
-        Map jobInfo = new HashMap<String, String>();
-        jobInfo.put("jobNo", "2");
+        //Map jobInfo = new HashMap<String, String>();
+        //jobInfo.put("jobNo", "2");
+        JobSchedule jobSchedule = new JobSchedule();
+        jobSchedule.setJobNo(2L);
 
-        thunderMailService.saveScTranProcess(jobInfo);
+        thunderMailService.saveScTranProcess(jobSchedule);
     }
 
 }

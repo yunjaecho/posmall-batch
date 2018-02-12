@@ -1,7 +1,8 @@
-package org.posmall.aspect;
+package org.posmall.config.aspect;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.posmall.jpa.entity.JobSchedule;
 import org.posmall.jpa.entity.TbJobErrorLog;
 import org.posmall.jpa.entity.TbJobExecLog;
 import org.posmall.jpa.repositores.TbJobErrorLogRepository;
@@ -14,11 +15,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 
-import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Date;
-import java.util.HashMap;
 
 /**
  * Created by USER on 2018-02-01.
@@ -46,19 +44,19 @@ public class BatchLoggingAspect {
     @Before("execution(* org.posmall.service.*.*Process(..))")
     public void beforeLogging(JoinPoint joinPoint) {
         try {
-            HashMap<String, String> paramMap = getJoinPointValues(joinPoint);
-            String jobNo = "";
+            JobSchedule jobSchedule = getJoinPointValues(joinPoint);
+            //String jobNo = "";
 
-            jobNo = paramMap.get("jobNo");
+            //jobNo = paramMap.get("jobNo");
 
             TbJobExecLog tbJobExecLog = new TbJobExecLog();
-            tbJobExecLog.setJobNo(Long.parseLong(jobNo));
+            tbJobExecLog.setJobNo(jobSchedule.getJobNo());
             tbJobExecLog.setStartDt(new Date());
             tbJobExecLog.setStatus("START");
             execLogRepos.save(tbJobExecLog);
 
-            paramMap.put("jobExecNo", String.valueOf(tbJobExecLog.getJobExecNo()));
-
+            jobSchedule.setJobExecNo(tbJobExecLog.getJobExecNo());
+            //paramMap.put("jobExecNo", String.valueOf(tbJobExecLog.getJobExecNo()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -72,14 +70,14 @@ public class BatchLoggingAspect {
     @AfterReturning(pointcut="execution(* org.posmall.service.*.*Process(..))")
     public void afterLogging(JoinPoint joinPoint) {
         try {
-            HashMap<String, String> paramMap = getJoinPointValues(joinPoint);
-            String jobNo = "";
-            String jobExecNo = "";
+            JobSchedule jobSchedule = getJoinPointValues(joinPoint);
+            //String jobNo = "";
+            //String jobExecNo = "";
 
-            jobNo = paramMap.get("jobNo");
-            jobExecNo = paramMap.get("jobExecNo");
+            //jobNo = paramMap.get("jobNo");
+            //jobExecNo = paramMap.get("jobExecNo");
 
-            TbJobExecLog tbJobExecLog = execLogRepos.findOne(Long.parseLong(jobExecNo));
+            TbJobExecLog tbJobExecLog = execLogRepos.findOne(jobSchedule.getJobExecNo());
             tbJobExecLog.setStatus("FINISH");
             tbJobExecLog.setEndDt(new Date());
             execLogRepos.save(tbJobExecLog);
@@ -97,22 +95,22 @@ public class BatchLoggingAspect {
     @AfterThrowing(pointcut="execution(* org.posmall.service.*.*Process(..)) || execution(* org.posmall.service.VirtualVaccService.saveVaccDepositConfirm(..))",throwing = "ex")
     public void errorLogging(JoinPoint joinPoint, Throwable ex) {
         try {
-            String jobNo = "";
+            //String jobNo = "";
             String errMsg = ex.getMessage();
             String errMsg1 = "";
             String errMsg2 = "";
-            String jobExecNo = "";
+            //String jobExecNo = "";
 
-            HashMap<String, String> paramMap = getJoinPointValues(joinPoint);
-            jobNo = paramMap.get("jobNo");
-            jobExecNo = paramMap.get("jobExecNo");
+            JobSchedule jobSchedule = getJoinPointValues(joinPoint);
+            //jobNo = paramMap.get("jobNo");
+            //jobExecNo = paramMap.get("jobExecNo");
 
             errMsg1 = CommonUtil.substr(errMsg, 0,4000);
             errMsg2 = CommonUtil.substr(errMsg, 4001,8000);
 
             /*  JOB 에러 로그 기록(Insert)  */
             TbJobErrorLog tbJobErrorLog = new TbJobErrorLog();
-            tbJobErrorLog.setJobNo(Long.parseLong(jobNo));
+            tbJobErrorLog.setJobNo(jobSchedule.getJobNo());
             tbJobErrorLog.setErrMsg(errMsg1);
             tbJobErrorLog.setErrMsg2(errMsg2);
             tbJobErrorLog.setCDt(new Date());
@@ -121,7 +119,7 @@ public class BatchLoggingAspect {
 
 
             /* JOB 실행 로그에 오류 완료 업데이트 처리 */
-            TbJobExecLog tbJobExecLog = execLogRepos.findOne(Long.parseLong(jobExecNo));
+            TbJobExecLog tbJobExecLog = execLogRepos.findOne(jobSchedule.getJobExecNo());
             tbJobExecLog.setStatus("ERROR");
             tbJobExecLog.setEndDt(new Date());
             execLogRepos.save(tbJobExecLog);
@@ -165,11 +163,11 @@ public class BatchLoggingAspect {
      * @param joinPoint
      * @return
      */
-    private HashMap<String, String> getJoinPointValues(JoinPoint joinPoint) {
+    private JobSchedule getJoinPointValues(JoinPoint joinPoint) {
         Object[] signatureArgs = joinPoint.getArgs();
 
-        if (signatureArgs != null && ("java.util.HashMap").equals(signatureArgs[0].getClass().getName())) {
-            return (HashMap)signatureArgs[0];
+        if (signatureArgs != null && signatureArgs[0] instanceof JobSchedule) {
+            return (JobSchedule)signatureArgs[0];
         } else {
             return null;
         }

@@ -1,4 +1,4 @@
-package org.posmall.config;
+package org.posmall.config.database.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
 import net.sf.log4jdbc.Log4jdbcProxyDataSource;
